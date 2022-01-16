@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import Table from './Table';
-
+import Input from "react-validation/build/input";
 export default class UserForm extends Component {
     constructor(props) {
-        let users = [];
         super(props)
         this.state = {
             Name: '',
@@ -49,41 +48,51 @@ export default class UserForm extends Component {
         this.deleteTableRecordHandler = this.deleteTableRecordHandler.bind(this);
         this.updateState = this.updateState.bind(this);
         this.viewRecordHandler = this.viewRecordHandler.bind(this);
+        // this.required = this.required.bind(this);
     }
-
+    // required = (value) => {
+    //     //////console.log(value)
+    //     if (!value) {
+    //       return (
+    //         <div className="alert alert-danger" role="alert">
+    //           This field is required!
+    //         </div>
+    //       );
+    //     }
+    //   };
 
     updateSelectedCountry(evt) {
-        console.log(evt.target.value);
+        //////console.log(evt.target.value);
         const country = this.state.countryList.filter((data, idx) => data.value === evt.target.value)[0];
         const state = this.state.stateList.filter((data, idx) => data.countryId === country.value)[0];
-        console.log("country: ", country);
+        //////console.log("country: ", country);
         this.setState({
             selectedCountry: country,
             selState: state
         });
     }
     updateState(evt) {
-        console.log(evt.target.value);
+        //////console.log(evt.target.value);
         const state = this.state.stateList.filter((data, idx) => data.text === evt.target.value)[0];
         this.setState({
             selState: state
         })
     }
     updateName(evt) {
-        console.log(evt.target.value);
+        //////console.log(evt.target.value);
         this.setState({
             Name: evt.target.value
         });
     }
     updateEmail(evt) {
-        console.log(evt.target.value);
+        //////console.log(evt.target.value);
 
         this.setState({
             Email: evt.target.value
         });
     }
     updatePhone(evt) {
-        console.log(evt.target.value);
+        //////console.log(evt.target.value);
 
         this.setState({
             Phone_Number: evt.target.value
@@ -105,32 +114,29 @@ export default class UserForm extends Component {
             selectedCountry: this.state.selectedCountry.text,
             selState: this.state.selState.text
         };
-        console.log("obj", obj);
         let usrs = [...this.state.savedUsers];
+
         if (obj.Name.trim() === '' || obj.Email.trim() === '' || obj.Phone_Number.trim() === '' || obj.Address.trim() === '') {
             return;
         }
         if (usrs.length === 0) usrs.push(obj);
+        let index = -1;
+        const userEmailData = usrs.filter((data, idx) => {
+            index = idx;
+            return data.Email === obj.Email
+        });
+        if (userEmailData.length === 0) {
+            usrs.push(obj);
+        } else {
+            if (index !== -1) usrs.splice(index, 1, obj);
 
-        usrs.forEach((data, idx) => {
-            if (data.Email !== obj.Email)
-                usrs.push(obj);
-            else {
-                const userData = usrs.filter((data, idx) => data.Email !== obj.Email);
-                console.log("userData: ", userData);
-                usrs = [...userData];
-                usrs.push(obj);
-            }
-        })
-
-        console.log("usrs:", usrs);
+        }
 
 
         this.setState({
             savedUsers: usrs
         });
         this.resetForm();
-        console.log(this.state.savedUsers);
     }
 
     resetForm() {
@@ -145,8 +151,8 @@ export default class UserForm extends Component {
         })
     }
     editTableRecordHandler(id, item) {
-        console.log(" item", item)
-        console.log("id ", id);
+        //////console.log(" item", item)
+        //////console.log("id ", id);
 
         const country = this.state.countryList.filter((data, idx) => data.text === item.selectedCountry)[0];
         const state = this.state.stateList.filter((data, idx) => data.text === item.selState)[0];
@@ -175,13 +181,11 @@ export default class UserForm extends Component {
     }
 
     deleteTableRecordHandler(id) {
-        console.log("id ", id)
-        console.log(this.state.savedUsers);
-
-        const data = this.state.savedUsers.filter((data, idx) => data.Email !== id);
-        console.log("data: ", data);
+        let index = this.state.savedUsers.findIndex((data, idx) => data.Email === id);
+        const delData = [...this.state.savedUsers];
+        delData.splice(index, 1);
         this.setState({
-            savedUsers: data,
+            savedUsers: delData,
             id: id
         });
     }
@@ -241,12 +245,16 @@ export default class UserForm extends Component {
                             </div>
                         </div> : ''
                 }
+                {
+                    (this.state.savedUsers && this.state.savedUsers.length > 0) ?
+                        <Table data={this.state.savedUsers} countries={this.state.countryList}
+                            editTableRecordHandler={this.editTableRecordHandler}
+                            deleteTableRecordHandler={this.deleteTableRecordHandler}
+                            viewRecordHandler={this.viewRecordHandler}
+                        />
+                        : ''
+                }
 
-                <Table data={this.state.savedUsers} countries={this.state.countryList}
-                    editTableRecordHandler={this.editTableRecordHandler}
-                    deleteTableRecordHandler={this.deleteTableRecordHandler}
-                    viewRecordHandler ={this.viewRecordHandler}
-                />
             </div>
         )
     }
